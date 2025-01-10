@@ -1,0 +1,87 @@
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Create by HAPPY script";
+    Text = "Loading shader, pls wait 30s ✨";
+    Duration = 30;
+})
+
+wait(30)
+
+-- Tạo ánh sáng môi trường (Environmental Light)
+local function createEnvironmentLight()
+    -- Loại bỏ ánh sáng cũ (nếu có)
+    local existingLight = workspace:FindFirstChild("ShaderLight")
+    if existingLight then
+        existingLight:Destroy()
+    end
+
+    -- Tạo một Part để gắn ánh sáng
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(1, 1, 1)  -- Kích thước nhỏ
+    part.Position = Vector3.new(0, 50, 0)  -- Vị trí của Part (có thể thay đổi)
+    part.Anchored = true
+    part.Parent = workspace  -- Thêm vào workspace
+
+    -- Tạo attachment và gắn vào Part
+    local attachment = Instance.new("Attachment")
+    attachment.Parent = part
+
+    -- Thêm ánh sáng vào Attachment
+    local light = Instance.new("PointLight")
+    light.Name = "ShaderLight"
+    light.Parent = attachment
+    light.Brightness = 2 -- Độ sáng giảm để ánh sáng dịu hơn
+    light.Range = 300 -- Mở rộng phạm vi
+    light.Color = Color3.fromRGB(255, 255, 220) -- Màu vàng nhạt
+end
+
+-- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
+local function enhanceReflectance()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        -- Kiểm tra các đối tượng có thể phản chiếu
+        if obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+            -- Đặt lại Reflectance thay vì cộng dồn
+            obj.Reflectance = math.clamp(0.2, 0, 1) -- Cố định giá trị phản chiếu vừa phải
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj.Transparency = 0.3 -- Làm sáng các decal và texture (nếu có)
+        end
+    end
+end
+
+-- Tạo hiệu ứng Bloom (ánh sáng lan tỏa)
+local function createBloomEffect()
+    local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
+    bloom.Parent = game.Lighting
+    bloom.Intensity = 2 -- Độ sáng giảm để không quá chói
+    bloom.Threshold = 1 -- Chỉ áp dụng với vùng sáng mạnh
+    bloom.Size = 25 -- Kích thước ánh sáng lan tỏa
+end
+
+-- Tạo hiệu ứng Blur (mờ nhẹ môi trường)
+local function createBlurEffect()
+    local blur = game.Lighting:FindFirstChild("BlurEffect") or Instance.new("BlurEffect")
+    blur.Parent = game.Lighting
+    blur.Size = 2 -- Mức độ mờ giảm nhẹ
+end
+
+-- Cập nhật hiệu ứng liên tục
+local function updateEffects()
+    while true do
+        -- Tăng cường phản chiếu liên tục
+        enhanceReflectance()
+
+        -- Thực hiện hiệu ứng mỗi 2 giây để đảm bảo không gây lag
+        task.wait(2) -- Cập nhật mỗi 2 giây (có thể điều chỉnh theo ý muốn)
+    end
+end
+
+-- Chạy tất cả các hiệu ứng shader
+local function applyShader()
+    createEnvironmentLight()
+    createBloomEffect()
+    createBlurEffect()
+    updateEffects()  -- Bắt đầu vòng lặp cập nhật hiệu ứng liên tục
+end
+
+-- Áp dụng shader
+applyShader()
+print("Shader đã được áp dụng thành công!")
