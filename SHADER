@@ -4,7 +4,7 @@ game.StarterGui:SetCore("SendNotification", {
     Duration = 30;
 })
 
-wait(30)
+wait(35)
 
 -- Tạo ánh sáng môi trường (Environmental Light)
 local function createEnvironmentLight()
