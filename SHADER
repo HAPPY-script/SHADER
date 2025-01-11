@@ -1,10 +1,17 @@
 game.StarterGui:SetCore("SendNotification", {
     Title = "Create by HAPPY script";
-    Text = "Loading shader, pls wait 30s-60s ✨";
-    Duration = 30;
+    Text = "Loading shader, pls wait 15s-30s ✨";
+    Duration = 15;
 })
 
-wait(35)
+wait(15)
+
+-- Tạo một biến flag để kiểm tra script có chạy chưa
+if _G.ShaderApplied then
+    print("Script đã chạy trước đó, không thể chạy lại.")
+    return
+end
+_G.ShaderApplied = true -- Đánh dấu script đã chạy
 
 -- Tạo ánh sáng môi trường (Environmental Light)
 local function createEnvironmentLight()
@@ -13,93 +20,60 @@ local function createEnvironmentLight()
     if existingLight then
         existingLight:Destroy()
     end
-
-    -- Tạo một Part để gắn ánh sáng
-    local part = Instance.new("Part")
-    part.Size = Vector3.new(1, 1, 1)  -- Kích thước nhỏ
-    part.Position = Vector3.new(0, 50, 0)  -- Vị trí của Part (có thể thay đổi)
-    part.Anchored = true
-    part.Parent = workspace  -- Thêm vào workspace
-
-    -- Tạo attachment và gắn vào Part
-    local attachment = Instance.new("Attachment")
-    attachment.Parent = part
-
-    -- Thêm ánh sáng vào Attachment
-    local light = Instance.new("PointLight")
-    light.Name = "ShaderLight"
-    light.Parent = attachment
-    light.Brightness = 1.2 -- Độ sáng giảm để ánh sáng dịu hơn
-    light.Range = 150 -- Mở rộng phạm vi
-    light.Color = Color3.fromRGB(255, 255, 220) -- Màu vàng nhạt
 end
 
 -- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
 local function enhanceReflectance()
-    local updated = false -- Biến kiểm tra xem có đối tượng nào cần cập nhật không
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        -- Kiểm tra các đối tượng có thể phản chiếu
-        if obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
-            -- Đặt lại Reflectance thay vì cộng dồn
-            if obj.Reflectance < 1 then
-                obj.Reflectance = 0.2 -- Cố định giá trị phản chiếu vừa phải
-                updated = true
-            end
-        elseif obj:IsA("Decal") or obj:IsA("Texture") then
-            obj.Transparency = 0.3 -- Làm sáng các decal và texture (nếu có)
-        end
-    end
+    local objects = workspace:GetDescendants()
+    local batchSize = 200  -- Số lượng đối tượng xử lý mỗi lần (giảm tải)
+    local index = 1
 
-    return updated -- Trả về xem có cập nhật gì không
+    -- Chia nhỏ công việc để tránh quá tải CPU
+    while index <= #objects do
+        for i = index, math.min(index + batchSize - 1, #objects) do
+            local obj = objects[i]
+            if obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+                if obj.Reflectance < 0.2 then
+                    obj.Reflectance = 0.2
+                end
+            end
+        end
+        index = index + batchSize
+        task.wait()  -- Dừng lại mỗi khi xử lý một nhóm
+    end
 end
 
 -- Tạo hiệu ứng Bloom (ánh sáng lan tỏa)
 local function createBloomEffect()
     local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
     bloom.Parent = game.Lighting
-    bloom.Intensity = 0.7 -- Độ sáng giảm để không quá chói
-    bloom.Threshold = 1 -- Chỉ áp dụng với vùng sáng mạnh
-    bloom.Size = 15 -- Kích thước ánh sáng lan tỏa
+    bloom.Intensity = 5
+    bloom.Threshold = 500
+    bloom.Size = 1000
 end
 
 -- Tạo hiệu ứng Blur (mờ nhẹ môi trường)
 local function createBlurEffect()
     local blur = game.Lighting:FindFirstChild("BlurEffect") or Instance.new("BlurEffect")
     blur.Parent = game.Lighting
-    blur.Size = 2 -- Mức độ mờ giảm nhẹ
+    blur.Size = 2
 end
 
--- Cập nhật hiệu ứng liên tục và kiểm tra khi có sự thay đổi
+-- Cập nhật hiệu ứng shader (tối ưu hóa bằng cách giảm xử lý liên tục)
 local function updateEffects()
-    local debounce = false -- Cơ chế debounce để tránh cập nhật quá nhanh
-
-    -- Cập nhật hiệu ứng mỗi 2 giây
-    while true do
-        if not debounce then
-            debounce = true  -- Đảm bảo không cập nhật quá nhanh
-
-            -- Tăng cường phản chiếu và kiểm tra xem có thay đổi không
-            local updated = enhanceReflectance()
-
-            -- Nếu có thay đổi, thì áp dụng lại các hiệu ứng khác
-            if updated then
-                createBloomEffect()
-                createBlurEffect()
-            end
-
-            -- Chờ 2 giây trước khi cập nhật lại
-            task.wait(2)
-            debounce = false
-        else
-            task.wait(0.1)  -- Chờ 0.1 giây để tránh quá tải
+    -- Chỉ chạy cập nhật mỗi khi cần (dựa vào thay đổi trạng thái)
+    task.spawn(function()
+        while task.wait(0.2) do  -- Cập nhật hiệu ứng mỗi 0.2 giây
+            enhanceReflectance()
         end
-    end
+    end)
 end
 
 -- Chạy tất cả các hiệu ứng shader
 local function applyShader()
-    createEnvironmentLight()
-    updateEffects()  -- Bắt đầu vòng lặp cập nhật hiệu ứng liên tục
+    createBloomEffect()  -- Tạo hiệu ứng Bloom
+    createBlurEffect()  -- Tạo hiệu ứng Blur
+    updateEffects()  -- Cập nhật hiệu ứng shader
 end
 
 -- Áp dụng shader
