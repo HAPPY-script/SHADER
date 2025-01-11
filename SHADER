@@ -4,7 +4,7 @@ game.StarterGui:SetCore("SendNotification", {
     Duration = 15;
 })
 
-wait(15)
+wait(17)
 
 -- Tạo một biến flag để kiểm tra script có chạy chưa
 if _G.ShaderApplied then
@@ -13,13 +13,39 @@ if _G.ShaderApplied then
 end
 _G.ShaderApplied = true -- Đánh dấu script đã chạy
 
+-- Biến để lưu ánh sáng môi trường
+local environmentLightPart = nil
+
 -- Tạo ánh sáng môi trường (Environmental Light)
 local function createEnvironmentLight()
     -- Loại bỏ ánh sáng cũ (nếu có)
-    local existingLight = workspace:FindFirstChild("ShaderLight")
-    if existingLight then
-        existingLight:Destroy()
+    if environmentLightPart then
+        environmentLightPart:Destroy()
+        environmentLightPart = nil
     end
+
+    -- Tạo một Part để gắn ánh sáng
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(1, 1, 1)  -- Kích thước nhỏ
+    part.Position = Vector3.new(0, 50, 0)  -- Vị trí của Part
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 1  -- Ẩn Part
+    part.Parent = workspace  -- Thêm vào workspace
+
+    -- Tạo attachment và gắn vào Part
+    local attachment = Instance.new("Attachment")
+    attachment.Parent = part
+
+    -- Thêm ánh sáng vào Attachment
+    local light = Instance.new("PointLight")
+    light.Name = "ShaderLight"
+    light.Brightness = 1.2
+    light.Range = 150
+    light.Color = Color3.fromRGB(255, 255, 220)
+    light.Parent = attachment
+
+    environmentLightPart = part -- Lưu lại Part đã tạo
 end
 
 -- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
@@ -69,13 +95,44 @@ local function updateEffects()
     end)
 end
 
+-- Dọn dẹp tất cả hiệu ứng khi không cần
+local function cleanupShader()
+    if environmentLightPart then
+        environmentLightPart:Destroy()
+        environmentLightPart = nil
+    end
+    if game.Lighting:FindFirstChild("BloomEffect") then
+        game.Lighting.BloomEffect:Destroy()
+    end
+    if game.Lighting:FindFirstChild("BlurEffect") then
+        game.Lighting.BlurEffect:Destroy()
+    end
+end
+
 -- Chạy tất cả các hiệu ứng shader
 local function applyShader()
+    createEnvironmentLight()  -- Tạo ánh sáng môi trường
     createBloomEffect()  -- Tạo hiệu ứng Bloom
     createBlurEffect()  -- Tạo hiệu ứng Blur
     updateEffects()  -- Cập nhật hiệu ứng shader
 end
 
--- Áp dụng shader
+-- Áp dụng shader và xử lý nhân vật respawn
+local function initializeShader()
+    local player = game.Players.LocalPlayer
+    if not player.Character then
+        player.CharacterAdded:Wait() -- Chờ nhân vật xuất hiện
+    end
+
+    -- Áp dụng shader khi nhân vật xuất hiện
+    player.CharacterAdded:Connect(function()
+        task.wait(1) -- Chờ để đảm bảo tất cả tài nguyên đã tải
+        cleanupShader() -- Dọn dẹp shader cũ
+        applyShader() -- Áp dụng lại shader
+    end)
+end
+
+-- Khởi chạy script
+initializeShader()
 applyShader()
 print("Shader đã được áp dụng thành công!")
