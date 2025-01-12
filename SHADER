@@ -1,10 +1,73 @@
 game.StarterGui:SetCore("SendNotification", {
     Title = "Create by HAPPY script";
     Text = "Loading shader, pls wait 15s-30s ✨";
-    Duration = 15;
+    Duration = 17;
 })
 
-wait(17)
+-- Tạo GUI Loading
+local ScreenGui = Instance.new("ScreenGui")
+local LoadingFrame = Instance.new("Frame")
+local LoadingBar = Instance.new("Frame")
+local LoadingText = Instance.new("TextLabel")
+
+-- Thuộc tính của ScreenGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "LoadingGUI"
+
+-- Thuộc tính của LoadingFrame (thanh nền)
+LoadingFrame.Name = "LoadingFrame"
+LoadingFrame.Parent = ScreenGui
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+LoadingFrame.Size = UDim2.new(0.8, 0, 0.05, 0)
+LoadingFrame.Position = UDim2.new(0.1, 0, -0.1, 0) -- Ban đầu nằm ngoài màn hình
+LoadingFrame.BorderSizePixel = 0
+
+-- Thuộc tính của LoadingBar (thanh tiến trình)
+LoadingBar.Name = "LoadingBar"
+LoadingBar.Parent = LoadingFrame
+LoadingBar.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+LoadingBar.Size = UDim2.new(0, 0, 1, 0) -- Ban đầu thanh trống
+LoadingBar.BorderSizePixel = 0
+
+-- Thuộc tính của LoadingText (% hiển thị)
+LoadingText.Name = "LoadingText"
+LoadingText.Parent = ScreenGui
+LoadingText.BackgroundTransparency = 1
+LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadingText.TextSize = 20
+LoadingText.Font = Enum.Font.SourceSansBold
+LoadingText.Size = UDim2.new(0.3, 0, 0.05, 0)
+LoadingText.Position = UDim2.new(0.35, 0, -0.1, 0) -- Vị trí tương ứng với LoadingFrame
+LoadingText.Text = "Loading: 0%"
+
+-- Thời gian loading ngẫu nhiên (15-30 giây)
+local loadingTime = math.random(15, 30)
+
+-- Hiệu ứng kéo vào từ trên
+local tweenService = game:GetService("TweenService")
+local moveInTween = tweenService:Create(LoadingFrame, TweenInfo.new(0.5), {Position = UDim2.new(0.1, 0, 0.05, 0)})
+local textMoveInTween = tweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.35, 0, 0.05, 0)})
+
+moveInTween:Play()
+textMoveInTween:Play()
+
+-- Cập nhật % và thanh tiến trình
+for i = 0, 100 do
+    wait(loadingTime / 100) -- Chia thời gian cho từng % tiến độ
+    LoadingBar.Size = UDim2.new(i / 100, 0, 1, 0) -- Tăng kích thước thanh
+    LoadingText.Text = "Loading: " .. i .. "%" -- Cập nhật chữ
+end
+
+-- Hiệu ứng kéo ra khỏi màn hình
+local moveOutTween = tweenService:Create(LoadingFrame, TweenInfo.new(0.5), {Position = UDim2.new(0.1, 0, -0.1, 0)})
+local textMoveOutTween = tweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.35, 0, -0.1, 0)})
+
+moveOutTween:Play()
+textMoveOutTween:Play()
+
+-- Xóa GUI sau khi ra khỏi màn hình
+moveOutTween.Completed:Wait() -- Đợi hiệu ứng hoàn thành
+ScreenGui:Destroy()
 
 -- Tạo một biến flag để kiểm tra script có chạy chưa
 if _G.ShaderApplied then
@@ -12,41 +75,6 @@ if _G.ShaderApplied then
     return
 end
 _G.ShaderApplied = true -- Đánh dấu script đã chạy
-
--- Biến để lưu ánh sáng môi trường
-local environmentLightPart = nil
-
--- Tạo ánh sáng môi trường (Environmental Light)
-local function createEnvironmentLight()
-    -- Loại bỏ ánh sáng cũ (nếu có)
-    if environmentLightPart then
-        environmentLightPart:Destroy()
-        environmentLightPart = nil
-    end
-
-    -- Tạo một Part để gắn ánh sáng
-    local part = Instance.new("Part")
-    part.Size = Vector3.new(1, 1, 1)  -- Kích thước nhỏ
-    part.Position = Vector3.new(0, 50, 0)  -- Vị trí của Part
-    part.Anchored = true
-    part.CanCollide = false
-    part.Transparency = 1  -- Ẩn Part
-    part.Parent = workspace  -- Thêm vào workspace
-
-    -- Tạo attachment và gắn vào Part
-    local attachment = Instance.new("Attachment")
-    attachment.Parent = part
-
-    -- Thêm ánh sáng vào Attachment
-    local light = Instance.new("PointLight")
-    light.Name = "ShaderLight"
-    light.Brightness = 1.2
-    light.Range = 150
-    light.Color = Color3.fromRGB(255, 255, 220)
-    light.Parent = attachment
-
-    environmentLightPart = part -- Lưu lại Part đã tạo
-end
 
 -- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
 local function enhanceReflectance()
@@ -73,8 +101,8 @@ end
 local function createBloomEffect()
     local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
     bloom.Parent = game.Lighting
-    bloom.Intensity = 5
-    bloom.Threshold = 500
+    bloom.Intensity = 3
+    bloom.Threshold = 100
     bloom.Size = 1000
 end
 
@@ -111,7 +139,6 @@ end
 
 -- Chạy tất cả các hiệu ứng shader
 local function applyShader()
-    createEnvironmentLight()  -- Tạo ánh sáng môi trường
     createBloomEffect()  -- Tạo hiệu ứng Bloom
     createBlurEffect()  -- Tạo hiệu ứng Blur
     updateEffects()  -- Cập nhật hiệu ứng shader
