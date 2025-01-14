@@ -101,9 +101,9 @@ end
 local function createBloomEffect()
     local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
     bloom.Parent = game.Lighting
-    bloom.Intensity = 3
-    bloom.Threshold = 100
-    bloom.Size = 1000
+    bloom.Intensity = 0.4
+    bloom.Threshold = 7
+    bloom.Size = 50
 end
 
 -- Tạo hiệu ứng Blur (mờ nhẹ môi trường)
