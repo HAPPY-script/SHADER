@@ -1,165 +1,183 @@
-game.StarterGui:SetCore("SendNotification", {
-    Title = "Create by HAPPY script";
-    Text = "Loading shader, pls wait 15s-30s ✨";
-    Duration = 17;
-})
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Tạo GUI Loading
-local ScreenGui = Instance.new("ScreenGui")
-local LoadingFrame = Instance.new("Frame")
-local LoadingBar = Instance.new("Frame")
-local LoadingText = Instance.new("TextLabel")
+-- Tạo ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.DisplayOrder = 10 -- Ưu tiên cao nhất
+screenGui.Parent = playerGui
 
--- Thuộc tính của ScreenGui
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.Name = "LoadingGUI"
+-- Màn hình purple hoàn toàn
+local blackScreen = Instance.new("Frame")
+blackScreen.Size = UDim2.new(1, 0, 1, 0)
+blackScreen.BackgroundColor3 = Color3.fromRGB(40, 0, 70)
+blackScreen.BackgroundTransparency = 1
+blackScreen.ZIndex = 10 -- Đặt ZIndex cao nhất để che mọi thứ
+blackScreen.Parent = screenGui
 
--- Thuộc tính của LoadingFrame (thanh nền)
-LoadingFrame.Name = "LoadingFrame"
-LoadingFrame.Parent = ScreenGui
-LoadingFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-LoadingFrame.Size = UDim2.new(0.8, 0, 0.05, 0)
-LoadingFrame.Position = UDim2.new(0.1, 0, -0.1, 0) -- Ban đầu nằm ngoài màn hình
-LoadingFrame.BorderSizePixel = 0
+-- Hiệu ứng tối dần
+TweenService:Create(blackScreen, TweenInfo.new(1.5), {BackgroundTransparency = 0}):Play()
 
--- Thuộc tính của LoadingBar (thanh tiến trình)
-LoadingBar.Name = "LoadingBar"
-LoadingBar.Parent = LoadingFrame
-LoadingBar.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-LoadingBar.Size = UDim2.new(0, 0, 1, 0) -- Ban đầu thanh trống
-LoadingBar.BorderSizePixel = 0
+-- Tạo tiêu đề "HAPPY script"
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+titleLabel.Position = UDim2.new(0, 0, 0.4, 0)
+titleLabel.Text = "Shader Blox Fruit"
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.TextSize = 50
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextTransparency = 1
+titleLabel.ZIndex = 11 -- Đảm bảo tiêu đề luôn nằm trên blackScreen
+titleLabel.Parent = blackScreen
 
--- Thuộc tính của LoadingText (% hiển thị)
-LoadingText.Name = "LoadingText"
-LoadingText.Parent = ScreenGui
-LoadingText.BackgroundTransparency = 1
-LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadingText.TextSize = 20
-LoadingText.Font = Enum.Font.SourceSansBold
-LoadingText.Size = UDim2.new(0.3, 0, 0.05, 0)
-LoadingText.Position = UDim2.new(0.35, 0, -0.1, 0) -- Vị trí tương ứng với LoadingFrame
-LoadingText.Text = "Loading: 0%"
+-- Hiệu ứng xuất hiện tiêu đề
+TweenService:Create(titleLabel, TweenInfo.new(1.5), {TextTransparency = 0}):Play()
 
--- Thời gian loading ngẫu nhiên (15-30 giây)
-local loadingTime = math.random(15, 30)
+-- Tạo chữ "Loading"
+local loadingLabel = Instance.new("TextLabel")
+loadingLabel.Size = UDim2.new(1, 0, 0.05, 0)
+loadingLabel.Position = UDim2.new(0, 0, 0.5, 0)
+loadingLabel.Text = "Loading [20s-22s]"
+loadingLabel.Font = Enum.Font.Gotham
+loadingLabel.TextSize = 30
+loadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingLabel.BackgroundTransparency = 1
+loadingLabel.TextTransparency = 1
+loadingLabel.ZIndex = 11 -- Che phủ script chính
+loadingLabel.Parent = blackScreen
 
--- Hiệu ứng kéo vào từ trên
-local tweenService = game:GetService("TweenService")
-local moveInTween = tweenService:Create(LoadingFrame, TweenInfo.new(0.5), {Position = UDim2.new(0.1, 0, 0.05, 0)})
-local textMoveInTween = tweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.35, 0, 0.05, 0)})
+-- Hiệu ứng xuất hiện chữ "Loading"
+TweenService:Create(loadingLabel, TweenInfo.new(1.5), {TextTransparency = 0}):Play()
 
-moveInTween:Play()
-textMoveInTween:Play()
+-- Tạo icon loading quay vòng tròn
+local loadingIcon = Instance.new("ImageLabel")
+loadingIcon.Size = UDim2.new(0.1, 0, 0.1, 0)
+loadingIcon.SizeConstraint = Enum.SizeConstraint.RelativeXX
+loadingIcon.Position = UDim2.new(0.5, 0, 0.6, 0)
+loadingIcon.AnchorPoint = Vector2.new(0.5, 0)
+loadingIcon.BackgroundTransparency = 1
+loadingIcon.Image = "rbxthumb://type=Asset&id=16030756939&w=150&h=150"
+loadingIcon.ImageTransparency = 1
+loadingIcon.ZIndex = 11 -- Đảm bảo icon luôn được nhìn thấy
+loadingIcon.Parent = blackScreen
 
--- Cập nhật % và thanh tiến trình
-for i = 0, 100 do
-    wait(loadingTime / 100) -- Chia thời gian cho từng % tiến độ
-    LoadingBar.Size = UDim2.new(i / 100, 0, 1, 0) -- Tăng kích thước thanh
-    LoadingText.Text = "Loading: " .. i .. "%" -- Cập nhật chữ
+-- Hiệu ứng xuất hiện icon
+TweenService:Create(loadingIcon, TweenInfo.new(1.5), {ImageTransparency = 0}):Play()
+
+-- Quay icon theo chiều kim đồng hồ
+local function rotateIcon()
+    local rotation = 0
+    while true do
+        rotation = rotation + 10
+        loadingIcon.Rotation = rotation
+        task.wait(0.05)
+    end
 end
+task.spawn(rotateIcon)
 
--- Hiệu ứng kéo ra khỏi màn hình
-local moveOutTween = tweenService:Create(LoadingFrame, TweenInfo.new(0.5), {Position = UDim2.new(0.1, 0, -0.1, 0)})
-local textMoveOutTween = tweenService:Create(LoadingText, TweenInfo.new(0.5), {Position = UDim2.new(0.35, 0, -0.1, 0)})
+-- Thời gian loading random từ 20-22 giây
+local loadingTime = math.random(20, 22)
 
-moveOutTween:Play()
-textMoveOutTween:Play()
+-- Chạy script chính trước khi hoàn tất loading (khi còn 19 giây)
+task.delay(loadingTime - 19, function()
+    -- Bắt đầu script shader
 
--- Xóa GUI sau khi ra khỏi màn hình
-moveOutTween.Completed:Wait() -- Đợi hiệu ứng hoàn thành
-ScreenGui:Destroy()
+    -- Tạo một biến flag để kiểm tra script có chạy chưa
+    if _G.ShaderApplied then
+        print("Script đã chạy trước đó, không thể chạy lại.")
+        return
+    end
+    _G.ShaderApplied = true -- Đánh dấu script đã chạy
 
--- Tạo một biến flag để kiểm tra script có chạy chưa
-if _G.ShaderApplied then
-    print("Script đã chạy trước đó, không thể chạy lại.")
-    return
-end
-_G.ShaderApplied = true -- Đánh dấu script đã chạy
+    -- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
+    local function enhanceReflectance()
+        local objects = workspace:GetDescendants()
+        local batchSize = 200  -- Số lượng đối tượng xử lý mỗi lần (giảm tải)
+        local index = 1
 
--- Tăng cường hiệu ứng phản chiếu trên tất cả các đối tượng
-local function enhanceReflectance()
-    local objects = workspace:GetDescendants()
-    local batchSize = 200  -- Số lượng đối tượng xử lý mỗi lần (giảm tải)
-    local index = 1
-
-    -- Chia nhỏ công việc để tránh quá tải CPU
-    while index <= #objects do
-        for i = index, math.min(index + batchSize - 1, #objects) do
-            local obj = objects[i]
-            if obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
-                if obj.Reflectance < 0.2 then
-                    obj.Reflectance = 0.2
+        -- Chia nhỏ công việc để tránh quá tải CPU
+        while index <= #objects do
+            for i = index, math.min(index + batchSize - 1, #objects) do
+                local obj = objects[i]
+                if obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+                    if obj.Reflectance < 0.2 then
+                        obj.Reflectance = 0.2
+                    end
                 end
             end
+            index = index + batchSize
+            task.wait()  -- Dừng lại mỗi khi xử lý một nhóm
         end
-        index = index + batchSize
-        task.wait()  -- Dừng lại mỗi khi xử lý một nhóm
     end
-end
 
--- Tạo hiệu ứng Bloom (ánh sáng lan tỏa)
-local function createBloomEffect()
-    local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
-    bloom.Parent = game.Lighting
-    bloom.Intensity = 0.4
-    bloom.Threshold = 7
-    bloom.Size = 50
-end
+    -- Tạo hiệu ứng Bloom (ánh sáng lan tỏa)
+    local function createBloomEffect()
+        local bloom = game.Lighting:FindFirstChild("BloomEffect") or Instance.new("BloomEffect")
+        bloom.Parent = game.Lighting
+        bloom.Intensity = 0.4
+        bloom.Threshold = 7
+        bloom.Size = 50
+    end
 
--- Tạo hiệu ứng Blur (mờ nhẹ môi trường)
-local function createBlurEffect()
-    local blur = game.Lighting:FindFirstChild("BlurEffect") or Instance.new("BlurEffect")
-    blur.Parent = game.Lighting
-    blur.Size = 2
-end
+    -- Tạo hiệu ứng Blur (mờ nhẹ môi trường)
+    local function createBlurEffect()
+        local blur = game.Lighting:FindFirstChild("BlurEffect") or Instance.new("BlurEffect")
+        blur.Parent = game.Lighting
+        blur.Size = 2
+    end
 
--- Cập nhật hiệu ứng shader (tối ưu hóa bằng cách giảm xử lý liên tục)
-local function updateEffects()
-    -- Chỉ chạy cập nhật mỗi khi cần (dựa vào thay đổi trạng thái)
-    task.spawn(function()
-        while task.wait(0.2) do  -- Cập nhật hiệu ứng mỗi 0.2 giây
-            enhanceReflectance()
+    -- Cập nhật hiệu ứng shader (tối ưu hóa bằng cách giảm xử lý liên tục)
+    local function updateEffects()
+        task.spawn(function()
+            while task.wait(0.2) do
+                enhanceReflectance()
+            end
+        end)
+    end
+
+    -- Dọn dẹp tất cả hiệu ứng khi không cần
+    local function cleanupShader()
+        if game.Lighting:FindFirstChild("BloomEffect") then
+            game.Lighting.BloomEffect:Destroy()
         end
-    end)
-end
-
--- Dọn dẹp tất cả hiệu ứng khi không cần
-local function cleanupShader()
-    if environmentLightPart then
-        environmentLightPart:Destroy()
-        environmentLightPart = nil
-    end
-    if game.Lighting:FindFirstChild("BloomEffect") then
-        game.Lighting.BloomEffect:Destroy()
-    end
-    if game.Lighting:FindFirstChild("BlurEffect") then
-        game.Lighting.BlurEffect:Destroy()
-    end
-end
-
--- Chạy tất cả các hiệu ứng shader
-local function applyShader()
-    createBloomEffect()  -- Tạo hiệu ứng Bloom
-    createBlurEffect()  -- Tạo hiệu ứng Blur
-    updateEffects()  -- Cập nhật hiệu ứng shader
-end
-
--- Áp dụng shader và xử lý nhân vật respawn
-local function initializeShader()
-    local player = game.Players.LocalPlayer
-    if not player.Character then
-        player.CharacterAdded:Wait() -- Chờ nhân vật xuất hiện
+        if game.Lighting:FindFirstChild("BlurEffect") then
+            game.Lighting.BlurEffect:Destroy()
+        end
     end
 
-    -- Áp dụng shader khi nhân vật xuất hiện
-    player.CharacterAdded:Connect(function()
-        task.wait(1) -- Chờ để đảm bảo tất cả tài nguyên đã tải
-        cleanupShader() -- Dọn dẹp shader cũ
-        applyShader() -- Áp dụng lại shader
-    end)
-end
+    -- Chạy tất cả các hiệu ứng shader
+    local function applyShader()
+        createBloomEffect()
+        createBlurEffect()
+        updateEffects()
+    end
 
--- Khởi chạy script
-initializeShader()
-applyShader()
-print("Shader đã được áp dụng thành công!")
+    -- Áp dụng shader và xử lý nhân vật respawn
+    local function initializeShader()
+        local player = game.Players.LocalPlayer
+        if not player.Character then
+            player.CharacterAdded:Wait() -- Chờ nhân vật xuất hiện
+        end
+
+        player.CharacterAdded:Connect(function()
+            task.wait(1)
+            cleanupShader()
+            applyShader()
+        end)
+    end
+
+    initializeShader()
+    applyShader()
+    print("Shader đã được áp dụng thành công!")
+end)
+
+-- Đảm bảo màn hình loading luôn che phủ cho đến khi fade-out kết thúc
+task.wait(loadingTime) -- Đợi hết thời gian loading
+TweenService:Create(blackScreen, TweenInfo.new(2), {BackgroundTransparency = 1}):Play() -- Fade-out màn hình loading trong 2 giây
+
+task.wait(2) -- Đợi hiệu ứng fade-out hoàn tất
+screenGui:Destroy() -- Xóa màn hình loading
