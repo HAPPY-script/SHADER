@@ -163,6 +163,36 @@ task.delay(loadingTime - 19, function()
             player.CharacterAdded:Wait() -- Chờ nhân vật xuất hiện
         end
 
+    --skybox
+        local skyboxData = {
+        SkyboxBk = "rbxthumb://type=Asset&id=129969883653797&w=420&h=420", -- bk (Back)
+        SkyboxFt = "rbxthumb://type=Asset&id=108101380282845&w=420&h=420", -- ft (Front)
+        SkyboxRt = "rbxthumb://type=Asset&id=75012662537728&w=420&h=420", -- rt (Right)
+        SkyboxLf = "rbxthumb://type=Asset&id=137629045445811&w=420&h=420", -- lf (Left)
+        SkyboxDn = "rbxthumb://type=Asset&id=108658380326960&w=420&h=420", -- dn (Down)
+        SkyboxUp = "rbxthumb://type=Asset&id=106947104504063&w=420&h=420"  -- up (Up)
+    }
+    
+    local function applySkybox()
+        -- Xóa tất cả Skybox cũ
+        for _, obj in pairs(game.Lighting:GetChildren()) do
+            if obj:IsA("Sky") then
+                obj:Destroy()
+            end
+        end
+
+        -- Tạo Skybox mới
+        local sky = Instance.new("Sky")
+        for prop, id in pairs(skyboxData) do
+            sky[prop] = id
+        end
+        sky.Parent = game.Lighting
+    end
+    
+    -- Thực hiện thay đổi Skybox ngay khi script chạy
+    applySkybox()
+
+
         player.CharacterAdded:Connect(function()
             task.wait(1)
             cleanupShader()
